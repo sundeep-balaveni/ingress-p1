@@ -1,0 +1,10 @@
+services:
+  frontend:
+    build:
+      context: ./FRONTEND
+      dockerfile: dockerfile
+    image: sparkautospark:v2.2.2 
+    container_name: frontend
+    ports:
+      - "3000:80"
+     # - "443:443"
