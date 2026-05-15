@@ -87,7 +87,7 @@ spec:
           #   - configMapRef:
           #       name: db-config
 
-          # check the health of the application using readiness probe
+          # check the health of the application using readiness probes
           readinessProbe:
             httpGet:
               path: /
