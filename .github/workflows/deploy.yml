@@ -40,7 +40,10 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t sparkstore-frontend:${IMAGE_TAG} .
+          docker build \
+          -f FRONTEND/Dockerfile \
+          -t sparkstore-frontend:${IMAGE_TAG} \
+          ./FRONTEND
 
       # Tag Docker Image
 
