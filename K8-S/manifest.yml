@@ -35,8 +35,7 @@ metadata:
     project: sparkstore
     environment: dev
     purpose: poc
-  annotations:
-    kubernetes.io/change-cause: "v1 frontend deployment"
+
     # the namespace in which the deployment will be created
 
 spec:
@@ -64,6 +63,9 @@ spec:
 
           # always pull the image to ensure we get the latest version of the application
           imagePullPolicy: Always
+
+        annotations:
+          kubernetes.io/change-cause: "v2 Frontend deployment"
 
           ports:
             - containerPort: 80
