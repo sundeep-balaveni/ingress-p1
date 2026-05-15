@@ -15,7 +15,7 @@ jobs:
 
     steps:
 
-      # Checkout Code
+      # Checkout Repository
 
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -30,7 +30,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Login To ECR
+      # Login To Amazon ECR
 
       - name: Login To Amazon ECR
         id: login-ecr
@@ -59,7 +59,7 @@ jobs:
           docker push \
           ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG}
 
-      # Update kubeconfig
+      # Configure kubectl for EKS
 
       - name: Configure kubectl
         run: |
@@ -67,7 +67,7 @@ jobs:
           --region ${{ secrets.AWS_REGION }} \
           --name ${{ secrets.EKS_CLUSTER_NAME }}
 
-      # Update Deployment Image
+      # Deploy Latest Image
 
       - name: Deploy To Kubernetes
         run: |
@@ -79,5 +79,11 @@ jobs:
 
       - name: Verify Deployment
         run: |
-          kubectl rollout status deployment/sparkstore-frontend \
+          kubectl rollout status deployment/sparkstore-frontend-deployment \
           -n sparkstore-dev
+
+      # Show Pods
+
+      - name: Verify Pods
+        run: |
+          kubectl get pods -n sparkstore-dev
