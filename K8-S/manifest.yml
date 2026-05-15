@@ -65,7 +65,7 @@ spec:
     spec:
       containers:
         - name: sparkstore-frontend
-          image: 893471992142.dkr.ecr.us-east-1.amazonaws.com/sparkautospark
+          image: 893471992142.dkr.ecr.us-east-1.amazonaws.com/sparkautospark:latest
 
           # always pull the image to ensure we get the latest version of the application
           imagePullPolicy: Always
@@ -129,7 +129,7 @@ spec:
 
   ports:
     - protocol: TCP
-      port: 30001     # service port
+      port: 80    # service port
       targetPort: 80    # container port
 
 ---
@@ -145,8 +145,7 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-    # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 443}]'
-    # alb.ingress.kubernetes.io/certificate-arn:
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
 
 spec:
   ingressClassName: alb
@@ -163,4 +162,4 @@ spec:
                 name: sparkstore-frontend-service
 
                 port:
-                  number: 30001
+                  number: 80
