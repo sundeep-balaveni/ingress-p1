@@ -59,7 +59,7 @@ jobs:
           docker push \
           ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG}
 
-      # Configure kubectl for EKS
+      # Configure kubectl
 
       - name: Configure kubectl
         run: |
@@ -67,23 +67,35 @@ jobs:
           --region ${{ secrets.AWS_REGION }} \
           --name ${{ secrets.EKS_CLUSTER_NAME }}
 
-      # Deploy Latest Image
+      # Deploy Latest Image To EKS
 
       - name: Deploy To Kubernetes
         run: |
           kubectl set image deployment/sparkstore-frontend-deployment \
-          sparkstore-frontend=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG} \
+          cart=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG} \
           -n sparkstore-dev
 
       # Verify Rollout
 
-      - name: Verify Deployment
+      - name: Verify Deployment Rollout
         run: |
           kubectl rollout status deployment/sparkstore-frontend-deployment \
           -n sparkstore-dev
 
-      # Show Pods
+      # Verify Pods
 
       - name: Verify Pods
         run: |
           kubectl get pods -n sparkstore-dev
+
+      # Verify Service
+
+      - name: Verify Service
+        run: |
+          kubectl get svc -n sparkstore-dev
+
+      # Verify Ingress
+
+      - name: Verify Ingress
+        run: |
+          kubectl get ingress -n sparkstore-dev
