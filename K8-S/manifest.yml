@@ -64,7 +64,7 @@ spec:
     
     spec:
       containers:
-        - name: cart
+        - name: sparkstore-frontend
           image: 893471992142.dkr.ecr.us-east-1.amazonaws.com/sparkautospark
 
           # always pull the image to ensure we get the latest version of the application
