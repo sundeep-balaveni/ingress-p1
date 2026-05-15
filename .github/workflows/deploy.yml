@@ -1,0 +1,80 @@
+name: Deploy Frontend To EKS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+
+      # Checkout Code
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Configure AWS Credentials
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Login To ECR
+
+      - name: Login To Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Build Docker Image
+
+      - name: Build Docker Image
+        run: |
+          docker build -t sparkstore-frontend:${IMAGE_TAG} .
+
+      # Tag Docker Image
+
+      - name: Tag Docker Image
+        run: |
+          docker tag sparkstore-frontend:${IMAGE_TAG} \
+          ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG}
+
+      # Push Docker Image
+
+      - name: Push Docker Image
+        run: |
+          docker push \
+          ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG}
+
+      # Update kubeconfig
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig \
+          --region ${{ secrets.AWS_REGION }} \
+          --name ${{ secrets.EKS_CLUSTER_NAME }}
+
+      # Update Deployment Image
+
+      - name: Deploy To Kubernetes
+        run: |
+          kubectl set image deployment/sparkstore-frontend \
+          sparkstore-frontend=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG} \
+          -n sparkstore-dev
+
+      # Verify Rollout
+
+      - name: Verify Deployment
+        run: |
+          kubectl rollout status deployment/sparkstore-frontend \
+          -n sparkstore-dev
