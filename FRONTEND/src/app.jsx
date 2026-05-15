@@ -1,4 +1,4 @@
-import SparkAutoSpark from "./SparkAutoPartsLanding.jsx";
+import SparkAutoSpark from "./SparksAuto.jsx";
 
 function App() {
   return <SparkAutoSpark />;
