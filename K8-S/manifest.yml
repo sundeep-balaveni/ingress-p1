@@ -1,0 +1,155 @@
+
+# This manifest file contains the configuration for the cart application, including a ConfigMap for database configuration, a Deployment for the application, and a Service to expose it.
+
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: frontend-config
+#   namespace: sparkstore-dev
+# data:
+  
+
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sparkstore-dev
+  labels:
+    project: sparkstore
+    environment: dev
+    purpose: poc
+
+---
+
+# deployment for cart application
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sparkstore-frontend-deployment
+  namespace: sparkstore-dev
+  labels:
+    app: sparkstore-frontend
+    project: sparkstore
+    environment: dev
+    purpose: poc
+  annotations:
+    kubernetes.io/change-cause: "v1 frontend deployment"
+    # the namespace in which the deployment will be created
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      # the selector to match the labels of the pods created by this deployment
+      app: sparkstore-frontend
+      project: sparkstore
+      environment: dev
+      purpose: poc
+
+  # the pod template
+  template:
+    metadata:
+      labels:
+        app: sparkstore-frontend
+        project: sparkstore
+        environment: dev
+        purpose: poc
+    spec:
+      containers:
+        - name: cart
+          image: 893471992142.dkr.ecr.us-east-1.amazonaws.com/sparkautospark
+
+          # always pull the image to ensure we get the latest version of the application
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 80
+
+          # resource limits and requests for the container
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+
+          # pass the environment variables to the application using configmap
+          # envFrom:
+          #   - configMapRef:
+          #       name: db-config
+
+          # check the health of the application using readiness probe
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            failureThreshold: 3
+            initialDelaySeconds: 15
+            # tcpSocket:
+            #   port: 80
+
+          # check the health of the application using liveness probe
+          livenessProbe:
+            tcpSocket:
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+---
+
+# clusterip service
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: sparkstore-frontend-service
+  namespace: sparkstore-dev
+  labels:
+    app: sparkstore-frontend
+    project: sparkstore
+    environment: dev
+    purpose: poc
+
+spec:
+  type: ClusterIP
+  selector:
+    app: sparkstore-frontend
+    project: sparkstore
+    environment: dev
+    purpose: poc
+
+  ports:
+    - protocol: TCP
+      port: 30001     # service port
+      targetPort: 80    # container por
+
+---
+#ingress configuration to expose the service to the internet
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sparkstore-ingress
+  namespace: sparkstore-dev
+
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing 
+    alb.ingress.kubernetes.io/target-type: ip  
+
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sparkstore-frontend-service
+
+                port:
+                  number: 80   # service port defined in the service manifest
