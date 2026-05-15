@@ -35,8 +35,9 @@ metadata:
     project: sparkstore
     environment: dev
     purpose: poc
-
-    # the namespace in which the deployment will be created
+  # annotations:
+  #   kubernetes.io/change-cause: "v2 frontend deployment"
+  #   # the namespace in which the deployment will be created
 
 spec:
   replicas: 1
@@ -51,11 +52,16 @@ spec:
   # the pod template
   template:
     metadata:
+      annotations:
+        kubernetes.io/change-cause: "v2 frontend deployment"   # the annotation to track the changes made to the deployment
+
+
       labels:
         app: sparkstore-frontend
         project: sparkstore
         environment: dev
         purpose: poc
+    
     spec:
       containers:
         - name: cart
@@ -63,9 +69,6 @@ spec:
 
           # always pull the image to ensure we get the latest version of the application
           imagePullPolicy: Always
-
-        annotations:
-          kubernetes.io/change-cause: "v2 Frontend deployment"
 
           ports:
             - containerPort: 80
@@ -127,7 +130,7 @@ spec:
   ports:
     - protocol: TCP
       port: 30001     # service port
-      targetPort: 80    # container por
+      targetPort: 80    # container port
 
 ---
 #ingress configuration to expose the service to the internet
@@ -157,4 +160,4 @@ spec:
                 name: sparkstore-frontend-service
 
                 port:
-                  number: 80
+                  number: 30001
