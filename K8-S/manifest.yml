@@ -53,7 +53,7 @@ spec:
   template:
     metadata:
       annotations:
-        kubernetes.io/change-cause: "v2 frontend deployment"   # the annotation to track the changes made to the deployment
+        kubernetes.io/change-cause: "v3 frontend deployment"   # the annotation to track the changes made to the deployment
 
 
       labels:
