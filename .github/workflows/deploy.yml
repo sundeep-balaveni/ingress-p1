@@ -72,7 +72,7 @@ jobs:
       - name: Deploy To Kubernetes
         run: |
           kubectl set image deployment/sparkstore-frontend-deployment \
-          cart=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG} \
+          sparkstore-frontend=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG} \
           -n sparkstore-dev
 
       # Verify Rollout
